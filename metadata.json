@@ -1,0 +1,10 @@
+{
+  "name": "Remix: MadSense",
+  "description": "Premium mobile-first sensory analysis and quality control platform for MadTree Brewing",
+  "requestFramePermissions": [
+    "vibrate"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

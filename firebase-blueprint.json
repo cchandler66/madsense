@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Brand": {
+      "title": "Brand",
+      "description": "Represents a brand of beverage",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "created": { "type": "string" },
+        "brandCode": { "type": "string" },
+        "hasBaseline": { "type": "boolean" },
+        "visual": { "type": "string" },
+        "aroma": { "type": "string" },
+        "taste": { "type": "string" },
+        "mouthfeel": { "type": "string" },
+        "overallDescription": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "created"]
+    },
+    "Batch": {
+      "title": "Batch",
+      "description": "Represents a batch of beverage",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "brandId": { "type": "string" },
+        "brandName": { "type": "string" },
+        "batchCode": { "type": "string" },
+        "date": { "type": "string" },
+        "tastersCount": { "type": "number" },
+        "percentDefect": { "type": "number" },
+        "tags": { "type": "array" }
+      },
+      "required": ["id", "brandId", "batchCode", "date"]
+    },
+    "SensoryEvaluation": {
+      "title": "SensoryEvaluation",
+      "description": "Represents an evaluation result",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "batchCode": { "type": "string" },
+        "brandId": { "type": "string" },
+        "brandName": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "date": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "tttRating": { "type": "string" },
+        "hedonicValue": { "type": "number" }
+      },
+      "required": ["id", "brandId", "batchCode"]
+    },
+    "SensoryPanel": {
+      "title": "SensoryPanel",
+      "description": "Represents an active sensory panel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "date": { "type": "string" },
+        "activeBrands": { "type": "array" },
+        "rubrics": { "type": "array" },
+        "tasters": { "type": "array" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "date", "status"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents a user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role"]
+    }
+  },
+  "firestore": {
+    "brands": {
+      "schema": { "$ref": "#/entities/Brand" },
+      "description": "All tracked brands."
+    },
+    "batches": {
+      "schema": { "$ref": "#/entities/Batch" },
+      "description": "All tracked batches."
+    },
+    "evaluations": {
+      "schema": { "$ref": "#/entities/SensoryEvaluation" },
+      "description": "All sensory evaluations submitted."
+    },
+    "panels": {
+      "schema": { "$ref": "#/entities/SensoryPanel" },
+      "description": "All active and past panels."
+    },
+    "users": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "All user profiles."
+    }
+  }
+}
