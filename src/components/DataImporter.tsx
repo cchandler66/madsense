@@ -65,7 +65,7 @@ export const DataImporter: React.FC<DataImporterProps> = ({
   // Helper: Simple CSV parser algorithm with header deep scanning
   const parseCSV = (text: string) => {
     try {
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      const lines = text.split(/\r\n|\n|\r/).map(line => line.trim()).filter(line => line.length > 0);
       if (lines.length < 1) {
         setErrorMessage('Empty or invalid CSV structure. Ensure at least some characters exist.');
         return;
@@ -75,33 +75,32 @@ export const DataImporter: React.FC<DataImporterProps> = ({
       let headerIdx = -1;
 
       // Scan all lines to find where headers live
-      for (let i = 0; i < lines.length; i++) {
+      for (let i = 0; i < lines.length && i < 20; i++) {
         const lineLower = lines[i].toLowerCase();
         
         // 1. Check for DraughtLab Training Report header
-        if (lineLower.includes('tasting id') && lineLower.includes('attribute') && lineLower.includes('passed')) {
+        if ((lineLower.includes('tasting id') || lineLower.includes('test id') || lineLower.includes('tasting')) && 
+            (lineLower.includes('attribute') || lineLower.includes('flavor') || lineLower.includes('spike')) && 
+            (lineLower.includes('passed') || lineLower.includes('correct') || lineLower.includes('picked'))) {
           mode = 'training';
           headerIdx = i;
           break;
         }
 
         // 2. Check for standard evaluations structure
-        if (lineLower.includes('test id') && (lineLower.includes('brand name') || lineLower.includes('value') || lineLower.includes('preference') || lineLower.includes('panel name') || lineLower.includes('brand id'))) {
+        if ((lineLower.includes('test id') || lineLower.includes('sample id') || lineLower.includes('evaluation')) && 
+            (lineLower.includes('brand') || lineLower.includes('product') || lineLower.includes('value') || lineLower.includes('rating') || lineLower.includes('preference'))) {
           mode = 'evals';
           headerIdx = i;
           break;
         }
-      }
-
-      if (mode === null) {
-        // Scanners for Brands sheet
-        for (let i = 0; i < lines.length; i++) {
-          const lineLower = lines[i].toLowerCase();
-          if (lineLower.includes('brand id') && lineLower.includes('brand name')) {
-            mode = 'brands';
-            headerIdx = i;
-            break;
-          }
+        
+        // 3. Check for Brands
+        if ((lineLower.includes('brand id') || lineLower.includes('brandid') || lineLower.includes('brand code')) && 
+            (lineLower.includes('brand name') || lineLower.includes('product name') || lineLower.includes('brand') || lineLower.includes('name'))) {
+          mode = 'brands';
+          headerIdx = i;
+          break;
         }
       }
 
@@ -531,6 +530,15 @@ bbd47f4b-8adb-4869-a8da-ae75207da966,"""Cin-Cin""nati Pils",beer,12/16/24,,True,
     parseCSV(csv);
   };
 
+  const loadMockTrainingTemplate = () => {
+    const csv = `Tasting Id,Panel Name,User,Name,Rating Date,Attribute,Intensity,Picked,Passed
+1001-A,DMS Bling Spike,joe@madtreebrewing.com,Joe Brewer,7/28/25,DMS,High,DMS,Yes
+1001-B,Diacetyl Bling Spike,jane@madtreebrewing.com,Jane Brewer,7/28/25,Diacetyl,Low,Infection,No
+`;
+    setCsvText(csv);
+    parseCSV(csv);
+  };
+
   return (
     <div className="space-y-6" id="legacy_reports_importer">
       <div className="bg-slate-950 p-6 rounded-3xl border border-slate-900 shadow-xl space-y-1">
@@ -615,6 +623,14 @@ bbd47f4b-8adb-4869-a8da-ae75207da966,"""Cin-Cin""nati Pils",beer,12/16/24,,True,
                   className="text-amber-400 hover:text-amber-300"
                 >
                   Load Hedonic Ratings Template
+                </button>
+                <span className="text-slate-700">|</span>
+                <button 
+                  type="button" 
+                  onClick={loadMockTrainingTemplate} 
+                  className="text-violet-400 hover:text-violet-300"
+                >
+                  Load Training Template
                 </button>
               </div>
             </div>

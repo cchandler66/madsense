@@ -19,6 +19,9 @@ import {
 } from 'lucide-react';
 import { UserProfile, OffFlavorItem, SensoryEvaluation } from '../types';
 
+import { AcuityMatrix } from './AcuityMatrix';
+import { SpikeTestRecord } from '../lib/acuityStats';
+
 interface AdminConsoleProps {
   users: UserProfile[];
   evaluations: SensoryEvaluation[];
@@ -28,6 +31,23 @@ interface AdminConsoleProps {
   onUpdateOffFlavor: (of: OffFlavorItem) => void;
   onNavigateToTab: (tab: string) => void;
 }
+
+// Generate some mock spike records for demonstration purposes
+const mockSpikeRecords: SpikeTestRecord[] = [
+  { panelistId: 'Charlie Johantges', batchCode: 'SPIKE-01', targetCompound: 'Diacetyl', targetConcentration: 3, userDetectedCompound: 'Diacetyl', userIntensity: 4 },
+  { panelistId: 'Charlie Johantges', batchCode: 'SPIKE-02', targetCompound: 'DMS', targetConcentration: 3, userDetectedCompound: 'DMS', userIntensity: 3 },
+  { panelistId: 'Charlie Johantges', batchCode: 'SPIKE-03', targetCompound: 'Acetaldehyde', targetConcentration: 2, userDetectedCompound: 'Acetaldehyde', userIntensity: 2 },
+  { panelistId: 'Charlie Johantges', batchCode: 'SPIKE-04', targetCompound: 'Diacetyl', targetConcentration: 2, userDetectedCompound: 'Infection', userIntensity: 1 },
+  { panelistId: 'Sarah Jenkins', batchCode: 'SPIKE-01', targetCompound: 'Diacetyl', targetConcentration: 3, userDetectedCompound: 'Diacetyl', userIntensity: 5 },
+  { panelistId: 'Sarah Jenkins', batchCode: 'SPIKE-02', targetCompound: 'DMS', targetConcentration: 3, userDetectedCompound: 'Diacetyl', userIntensity: 3 },
+  { panelistId: 'Sarah Jenkins', batchCode: 'SPIKE-03', targetCompound: 'Acetaldehyde', targetConcentration: 2, userDetectedCompound: 'Acetaldehyde', userIntensity: 2 },
+  { panelistId: 'Mike Brewer', batchCode: 'SPIKE-01', targetCompound: 'Diacetyl', targetConcentration: 3, userDetectedCompound: 'Diacetyl', userIntensity: 2 },
+  { panelistId: 'Mike Brewer', batchCode: 'SPIKE-02', targetCompound: 'DMS', targetConcentration: 3, userDetectedCompound: 'Acetaldehyde', userIntensity: 2 },
+  { panelistId: 'Mike Brewer', batchCode: 'SPIKE-03', targetCompound: 'Acetaldehyde', targetConcentration: 2, userDetectedCompound: null, userIntensity: 0 },
+  { panelistId: 'Alex Tester', batchCode: 'SPIKE-01', targetCompound: 'Diacetyl', targetConcentration: 3, userDetectedCompound: null, userIntensity: 0 },
+  { panelistId: 'Alex Tester', batchCode: 'SPIKE-02', targetCompound: 'DMS', targetConcentration: 3, userDetectedCompound: null, userIntensity: 0 },
+  { panelistId: 'Alex Tester', batchCode: 'SPIKE-03', targetCompound: 'Acetaldehyde', targetConcentration: 2, userDetectedCompound: 'DMS', userIntensity: 1 },
+];
 
 export const AdminConsole: React.FC<AdminConsoleProps> = ({
   users,
@@ -42,7 +62,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const [newUserName, setNewUserName] = useState<string>('');
   const [newUserRole, setNewUserRole] = useState<'admin' | 'panelist'>('panelist');
 
-  const [activeTab, setActiveTab] = useState<'panelists' | 'offflavors' | 'preferences'>('panelists');
+  const [activeTab, setActiveTab] = useState<'panelists' | 'offflavors' | 'acuity' | 'preferences'>('panelists');
   
   // Local toggle states
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
@@ -169,6 +189,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           {[
             { id: 'panelists', name: 'Panelists', icon: Users },
             { id: 'offflavors', name: 'Off-Flavor DB', icon: Flame },
+            { id: 'acuity', name: 'Acuity Matrix', icon: BookOpen },
             { id: 'preferences', name: 'Settings', icon: Moon }
           ].map(tab => (
             <button
@@ -352,6 +373,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'acuity' && (
+        <div className="animate-fadeIn">
+          <AcuityMatrix spikeRecords={mockSpikeRecords} trackedCompounds={['Diacetyl', 'DMS', 'Acetaldehyde', 'Trans-2-Nonenal', 'Infection']} />
         </div>
       )}
 

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Batch, SensoryEvaluation, Brand } from '../types';
 import { DifferenceTester } from './DifferenceTester';
+import FeedbackEngine from '../lib/feedbackEngine';
 
 interface BatchTrackerProps {
   batches: Batch[];
@@ -52,9 +53,8 @@ export const BatchTracker: React.FC<BatchTrackerProps> = ({
   const [showTriangleTest, setShowTriangleTest] = useState<boolean>(false);
 
   const triggerHapticFeedback = () => {
-    if (window.navigator.vibrate) {
-      window.navigator.vibrate(35);
-    }
+    FeedbackEngine.init();
+    FeedbackEngine.tick();
   };
 
   // Clear search on preset mount/demount

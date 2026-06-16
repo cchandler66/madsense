@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { Brand, SensoryPanel, SensoryEvaluation, OffFlavorEvaluation, OffFlavorItem } from '../types';
 import { FlavorWheelReference } from './FlavorWheelReference';
+import FeedbackEngine from '../lib/feedbackEngine';
+import { DescriptiveProfiler, DescriptiveAttribute } from './DescriptiveProfiler';
 
 interface ActivePanelProps {
   activePanels: SensoryPanel[];
@@ -52,8 +54,8 @@ export const ActivePanel: React.FC<ActivePanelProps> = ({
   const [hedonicValue, setHedonicValue] = useState<number | undefined>(undefined);
   const [hedonicComments, setHedonicComments] = useState<string>('');
 
-  // Descriptive state (DOE Attributes / 0-7 Scale)
-  const [doeAttributes, setDoeAttributes] = useState<Record<string, number>>({});
+  // Descriptive state
+  const [descriptiveProfile, setDescriptiveProfile] = useState<DescriptiveAttribute[]>([]);
 
   // Off Flavor Selected States
   const [offFlavorSelections, setOffFlavorSelections] = useState<Record<string, { detected: boolean; severity: 0 | 1 | 2 | 3; notes: string }>>({});
@@ -103,9 +105,13 @@ export const ActivePanel: React.FC<ActivePanelProps> = ({
   React.useEffect(() => {
     if (activeBrand) {
       const attrs = getAttributesForType(activeBrand.type);
-      const initial: Record<string, number> = {};
-      attrs.forEach(a => initial[a] = 4); // 4 is standard target baseline
-      setDoeAttributes(initial);
+      const initial: DescriptiveAttribute[] = attrs.map(a => ({
+        term: a,
+        categoryPath: 'Baseline Target',
+        intensity: 4,
+        notes: ''
+      }));
+      setDescriptiveProfile(initial);
       setTttMetrics({});
     }
   }, [activeBrand]);
@@ -123,10 +129,8 @@ export const ActivePanel: React.FC<ActivePanelProps> = ({
   }, []);
 
   const triggerHapticFeedback = () => {
-    // Standard vibration API if accessed in native Android wrapper
-    if (window.navigator.vibrate) {
-      window.navigator.vibrate(35);
-    }
+    FeedbackEngine.init();
+    FeedbackEngine.tick();
     setHapticTrigger(true);
     setTimeout(() => setHapticTrigger(false), 200);
   };
@@ -186,7 +190,10 @@ export const ActivePanel: React.FC<ActivePanelProps> = ({
       tttComments: tttComments || undefined,
       hedonicValue,
       hedonicComments: hedonicComments || undefined,
-      doeAttributes: (activePanel.rubrics || []).includes('descriptive') ? doeAttributes : undefined,
+      doeAttributes: descriptiveProfile.reduce((acc, curr) => {
+        acc[curr.term] = curr.intensity;
+        return acc;
+      }, {} as Record<string, number>),
       offFlavors: offFlavorsToSave
     };
 
@@ -561,49 +568,13 @@ export const ActivePanel: React.FC<ActivePanelProps> = ({
               </div>
             )}
 
-            {/* Descriptive Attributes Section */}
+            {/* Descriptive Attributes Section - UPGRADED */}
             {(activePanel.rubrics || []).includes('descriptive') && (
-              <div className="bg-slate-950 p-6 rounded-3xl border border-slate-900 shadow-xl space-y-4" id="descriptive_rubric_card">
-                <div className="border-b border-slate-900/50 pb-3">
-                  <h3 className="text-md font-bold text-slate-100">{(activePanel.rubrics || []).includes('hedonic') ? '3. ' : '2. '}Descriptive Attributes</h3>
-                  <p className="text-slate-400 text-xs mt-1">Evaluate specific brand characteristics against baseline standards</p>
-                </div>
-                
-                <div className="space-y-4 pt-2">
-                  {Object.entries(doeAttributes).map(([attr, score]) => (
-                    <div key={attr} className="space-y-2">
-                      <div className="flex justify-between items-end">
-                        <label className="text-xs text-slate-300 font-bold tracking-wide">{attr}</label>
-                        <span className="text-[10px] font-mono bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 font-bold">{score} / 7</span>
-                      </div>
-                      
-                      <div className="relative pt-1">
-                        <div className="absolute top-1/2 left-0 w-full h-[3px] -translate-y-1/2 bg-slate-800 rounded-full select-none" />
-                        <div 
-                          className="absolute top-1/2 left-0 h-[3px] -translate-y-1/2 bg-cyan-500 rounded-full transition-all duration-200"
-                          style={{ width: `${((Number(score) || 0) / 7) * 100}%` }}
-                        />
-                        <input
-                          type="range"
-                          min="0"
-                          max="7"
-                          step="1"
-                          value={score}
-                          onChange={(e) => {
-                            setDoeAttributes(prev => ({ ...prev, [attr]: Number(e.target.value) }));
-                          }}
-                          className="w-full relative z-10 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-cyan-400 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
-                        />
-                      </div>
-                      <div className="flex justify-between text-[9px] text-slate-500 font-mono">
-                        <span>Low / Absent</span>
-                        <span>Moderate</span>
-                        <span>Very High</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <DescriptiveProfiler 
+                initialAttributes={descriptiveProfile}
+                onChange={(newAttributes) => setDescriptiveProfile(newAttributes)}
+                brandTargetInfo={activeBrand}
+              />
             )}
 
             {/* Submit Bar */}

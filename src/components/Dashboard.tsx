@@ -12,15 +12,11 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadialBarChart, RadialBar, Legend, Cell, PieChart, Pie } from 'recharts';
 import { Brand, Batch, SensoryEvaluation, UserProfile } from '../types';
+import { useSensoryData } from '../context/SensoryContext';
 
 interface DashboardProps {
-  brands: Brand[];
-  batches: Batch[];
-  evaluations: SensoryEvaluation[];
-  users: UserProfile[];
   onNavigateToTab: (tab: string) => void;
   onSelectBatchCode: (code: string) => void;
-  onUpdateBrand?: (updatedBrand: Brand) => void;
 }
 
 const SENSORY_FACTS = [
@@ -51,14 +47,10 @@ const SENSORY_FACTS = [
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({
-  brands,
-  batches,
-  evaluations,
-  users,
   onNavigateToTab,
   onSelectBatchCode,
-  onUpdateBrand
 }) => {
+  const { popularitySortedBrands: brands, batches, evaluations, users, handleUpdateBrand: onUpdateBrand } = useSensoryData();
   const [selectedBrandFilter, setSelectedBrandFilter] = useState<string>('all');
   const [brandSearchTerm, setBrandSearchTerm] = useState('');
   const [showBrandSearch, setShowBrandSearch] = useState(false);
